@@ -27,6 +27,13 @@ public class UserController {
         return List.of("Test1", "Test2", "Test3");
     }
 
+
+    @GetMapping("/version")
+    public  String version() {
+        return "User Service Version 1.0";
+    }
+
+
     private List<User> generateRandomUsers(Integer count) {
         count = (count == null || count <= 0) ? 10 : count; // Default to 10 users if count is not provided or invalid
         return new Random().ints(count, 1, 1000)
