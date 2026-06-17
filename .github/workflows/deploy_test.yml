@@ -13,6 +13,18 @@ jobs:
 
     steps:
 
+      - name: Build Jar
+        run: |
+          mvn clean package -DskipTests
+
+      - name: Build Image
+        run: |
+          docker build -t myapp:dev .
+
+      - name: Load Image
+        run: |
+          kind load docker-image myapp:dev
+
       - name: Restart
         run: |
           kubectl rollout restart deployment/user-service
