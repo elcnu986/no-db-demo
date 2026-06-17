@@ -1,0 +1,22 @@
+name: Restart Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  deploy:
+
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Restart
+        run: |
+          kubectl rollout restart deployment/user-service
+
+      - name: Wait
+        run: |
+          kubectl rollout status deployment/user-service
