@@ -1,0 +1,32 @@
+name: Test Runner
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  test:
+
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Show Host
+        run: |
+          whoami
+          hostname
+          pwd
+
+      - name: Show Kubectl
+        run: |
+          kubectl get nodes
+
+      - name: Show Kind
+        run: |
+          kind get clusters
+
+      - name: Show Docker
+        run: |
+          docker ps
