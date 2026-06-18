@@ -1,56 +1,50 @@
-name: Build And Deploy To Kind
+name: CI-CD
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: myapp
+
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify Environment
-        run: |
-          java -version
-          mvn -v
-          docker --version
-          kubectl version --client
-          kind version
-
-      - name: Build Jar
-        run: |
-          mvn clean package -DskipTests
-
       - name: Set Image Tag
-        run: |
-          echo "IMAGE_TAG=${GITHUB_SHA::8}" >> $GITHUB_ENV
+        run: echo "IMAGE_TAG=${GITHUB_SHA}" >> $GITHUB_ENV
 
-      - name: Build Docker Image
+      - name: Login GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+          -u "${{ github.actor }}" \
+          --password-stdin
+
+      - name: Build Image
         run: |
           docker build \
-            -t myapp:dev \
-            -f Dockerfile-simple .
+          -t ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+          .
 
-      - name: Load Image Into Kind
+      - name: Push Image
         run: |
-          kind load docker-image myapp:dev
+          docker push \
+          ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-      - name: Update Deployment Image
+      - name: Update Deployment
         run: |
-          kubectl rollout restart deployment/user-service
+          kubectl set image deployment/user-service \
+          user-service=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
       - name: Wait Rollout
         run: |
-          kubectl rollout status deployment/user-service --timeout=300s
-
-      - name: Show Pods
-        run: |
-          kubectl get pods -o wide
-
-      - name: Show Service
-        run: |
-          kubectl get svc
+          kubectl rollout status deployment/user-service
