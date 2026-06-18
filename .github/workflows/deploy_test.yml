@@ -41,8 +41,7 @@ jobs:
 
       - name: Update Deployment Image
         run: |
-          kubectl set image deployment/user-service \
-            user-service=myapp:dev
+          kubectl rollout restart deployment/user-service
 
       - name: Wait Rollout
         run: |
