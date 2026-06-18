@@ -30,7 +30,7 @@ public class UserController {
 
     @GetMapping("/version")
     public  String version() {
-        return "User Service Version 1.0";
+        return "User Service Version 9.0";
     }
 
 
